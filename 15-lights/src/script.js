@@ -2,6 +2,7 @@ import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'lil-gui'
+import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper'
 
 /**
  * Base
@@ -18,14 +19,81 @@ const scene = new THREE.Scene()
 /**
  * Lights
  */
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
-scene.add(ambientLight)
 
-const pointLight = new THREE.PointLight(0xffffff, 0.5)
-pointLight.position.x = 2
-pointLight.position.y = 3
-pointLight.position.z = 4
-scene.add(pointLight)
+const ambientLight = new THREE.AmbientLight()
+ambientLight.color = new THREE.Color(0xffffff)
+ambientLight.intensity = 0.5
+scene.add(ambientLight)
+{ // debug
+	const folder = gui.addFolder('AmbientLight')
+	folder.addColor(ambientLight, 'color')
+	folder.add(ambientLight, 'intensity').min(0).max(1)
+	folder.add(ambientLight, 'visible')
+}
+
+const directionalLight = new THREE.DirectionalLight(0xffffff)
+const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 0.1)
+directionalLight.position.set(1, 0.25, 0)
+scene.add(directionalLight, directionalLightHelper)
+{ // debug
+	const folder = gui.addFolder('DirectionalLight')
+	folder.addColor(directionalLight, 'color')
+	folder.add(directionalLight, 'intensity').min(0).max(1)
+	folder.add(directionalLight.position, 'x')
+	folder.add(directionalLight.position, 'y')
+	folder.add(directionalLight.position, 'z')
+	folder.add(directionalLight, 'visible')
+}
+
+const hemisphereLight = new THREE.HemisphereLight(0x00ff00, 0xff0000, 0.5)
+const hemisphereLightHelper = new THREE.HemisphereLightHelper(hemisphereLight, 0.1)
+scene.add(hemisphereLight, hemisphereLightHelper)
+{ // debug
+	const folder = gui.addFolder('HemisphereLight')
+	folder.addColor(hemisphereLight, 'color')
+	folder.addColor(hemisphereLight, 'groundColor')
+	folder.add(hemisphereLight, 'intensity').min(0).max(1)
+	folder.add(hemisphereLight, 'visible')
+}
+
+const pointLight = new THREE.PointLight(0xff9f00, 0.6)
+const pointLightHelper = new THREE.PointLightHelper(pointLight, 0.1)
+scene.add(pointLight, pointLightHelper)
+{ // debug
+	const folder = gui.addFolder('PointLight')
+	folder.addColor(pointLight, 'color')
+	folder.add(pointLight, 'intensity')
+	folder.add(pointLight.position, 'x')
+	folder.add(pointLight.position, 'y')
+	folder.add(pointLight.position, 'z')
+	folder.add(pointLight, 'visible')
+}
+
+const rectAreaLight = new THREE.RectAreaLight(0x0f1289, 2, 1, 1)
+const rectAreaLightHelper = new RectAreaLightHelper(rectAreaLight)
+scene.add(rectAreaLight, rectAreaLightHelper)
+{ // debug
+	const folder = gui.addFolder('RectAreaLight')
+	folder.addColor(rectAreaLight, 'color')
+	folder.add(rectAreaLight, 'width')
+	folder.add(rectAreaLight, 'height')
+	folder.add(rectAreaLight, 'visible')
+	folder.add(rectAreaLight.position, 'x')
+	folder.add(rectAreaLight.position, 'y')
+	folder.add(rectAreaLight.position, 'z')
+}
+
+const spotLight = new THREE.SpotLight(0xffffff, 0.5, 10, Math.PI * 0.1, 0.25, 0.1)
+const spotLightHelper = new THREE.SpotLightHelper(spotLight)
+scene.add(spotLight, spotLight.target, spotLightHelper)
+{
+	const folder = gui.addFolder('SpotLight')
+	folder.addColor(spotLight, 'color')
+	folder.add(spotLight.target.position, 'x')
+	folder.add(spotLight.target.position, 'y')
+	folder.add(spotLight.target.position, 'z')
+	folder.add(spotLight, 'visible')
+}
 
 /**
  * Objects
@@ -124,6 +192,10 @@ const tick = () =>
     sphere.rotation.x = 0.15 * elapsedTime
     cube.rotation.x = 0.15 * elapsedTime
     torus.rotation.x = 0.15 * elapsedTime
+
+		rectAreaLight.lookAt(new THREE.Vector3())
+		directionalLightHelper.update()
+		spotLightHelper.update()
 
     // Update controls
     controls.update()
