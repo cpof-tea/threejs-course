@@ -19,15 +19,33 @@ const scene = new THREE.Scene()
  * Textures
  */
 const textureLoader = new THREE.TextureLoader()
+const particlesTexture = textureLoader.load('/textures/particles/1.png')
 
-/**
- * Test cube
- */
-const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial()
-)
-scene.add(cube)
+const particlesGeometry = new THREE.BufferGeometry()
+const count = 5000
+const positions = new Float32Array(count * 3)
+const colors = new Float32Array(count * 3)
+
+for (let i = 0; i < count * 3; i++) {
+	positions[i] = (Math.random() - 0.5) * 10
+	colors[i] = Math.random()
+}
+
+particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+
+const particlesMaterial = new THREE.PointsMaterial({
+	size: 0.1,
+	sizeAttenuation: true,
+	alphaMap: particlesTexture,
+	depthWrite: false,
+	blending: THREE.AdditiveBlending,
+	transparent: true,
+	vertexColors: true,
+})
+
+const particles = new THREE.Points(particlesGeometry, particlesMaterial)
+scene.add(particles)
 
 /**
  * Sizes
@@ -81,6 +99,15 @@ const clock = new THREE.Clock()
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
+
+		for (let i = 0; i < count; i++) {
+			const i3 = i * 3
+			const x = particlesGeometry.attributes.position.array[i3]
+
+			particlesGeometry.attributes.position.array[i3 + 1] = Math.sin(elapsedTime + x)
+		}
+
+		particlesGeometry.attributes.position.needsUpdate = true
 
     // Update controls
     controls.update()
